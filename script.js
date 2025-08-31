@@ -31,37 +31,30 @@ function renderLetters() {
 
 function pickRandomQuestion() {
   if (!questions.length) return;
-  current = questions[Math.floor(Math.random() * questions.length)];
+  current = questions[Math.floor(Math.random()*questions.length)];
   setupRound();
 }
 
 function setupRound() {
-  lives = 6;
-  gameOver = false;
-  guessed.clear();
-  statusEl.textContent = "";
-
+  lives = 6; gameOver = false; guessed.clear(); statusEl.textContent = "";
   const ans = normalize(current.Answer);
   display = Array.from(ans).map(ch => isAlpha(ch) ? '_' : ch);
-
   questionEl.textContent = current.Question;
   maskedEl.textContent = display.join(' ');
   livesEl.textContent = lives;
-
   renderLetters();
 }
 
 function onGuess(letter) {
   if (gameOver) return;
   guessed.add(letter);
-
   const ans = normalize(current.Answer);
   const upperAns = ans.toUpperCase();
 
   let hit = false;
   for (let i = 0; i < ans.length; i++) {
     if (isAlpha(ans[i]) && upperAns[i] === letter) {
-      display[i] = ans[i]; // preserve original case
+      display[i] = ans[i]; // preserve original case if any
       hit = true;
     }
   }
@@ -95,19 +88,16 @@ function checkEnd() {
 newBtn.addEventListener("click", pickRandomQuestion);
 resetBtn.addEventListener("click", () => setupRound());
 
-const API_URL = "http://codeapi.net.cws18.my-hosting-panel.com/hangman.php";
-
 async function loadQuestions() {
   try {
-    const res = await fetch(API_URL);
+    const res = await fetch("./questions.json");
     if (!res.ok) throw new Error("HTTP " + res.status);
     questions = await res.json();
+    pickRandomQuestion();
   } catch (err) {
-    console.warn("API failed, loading local file…", err);
-    const res = await fetch("./questions.json");
-    questions = await res.json();
+    questionEl.textContent = "Questions load error";
+    console.error(err);
   }
-  pickRandomQuestion();
 }
 
 loadQuestions();
